@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:vibration/vibration.dart';
+import 'package:fidget_app/fidgets/switch.dart';
+import 'package:fidget_app/fidgets/single_button.dart';
 
 void main() => runApp(MyApp());
 
@@ -11,30 +12,66 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: SingleButton(),
+      home: HomePage(),
     );
   }
 }
 
-class SingleButton extends StatefulWidget {
-  final String title = "Single Button";
-
-  @override
-  SingleButtonState createState() => SingleButtonState();
+class DrawerItem {
+  String title;
+  DrawerItem(this.title);
 }
 
-class SingleButtonState extends State<SingleButton> {
+class HomePage extends StatefulWidget {
+  final String title = "Single Button";
+
+  final fidgets = [
+    new DrawerItem("Single Button"),
+    new DrawerItem("Switch"),
+  ];
+
+  @override
+  HomePageState createState() => HomePageState();
+}
+
+class HomePageState extends State<HomePage> {
+  int _selectedFidget = 0;
+
+  getDrawerItemWidget(int position) {
+    switch (position) {
+      case 0:
+        return SingleButtonFidget();
+      case 1:
+        return SwitchFidget();
+      
+      default:
+        return Text("Error: please notify the developer with this code #A48X");
+    }
+  }
+
+  onSelectItem(int index) {
+    setState(() => _selectedFidget = index);
+    Navigator.of(context).pop();
+  }
+
   @override
   Widget build(BuildContext context) {
+    var drawerItems = <Widget>[];
+    for (var i = 0; i < widget.fidgets.length; i++) {
+      var _fidget = widget.fidgets[i];
+      drawerItems.add(
+        new ListTile(
+          title: Text(_fidget.title),
+          selected: i == _selectedFidget,
+          onTap: () => onSelectItem(i),
+        )
+      );
+    }
+
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          leading: IconButton(
-            icon: Icon(Icons.menu),
-            tooltip: "Menu",
-            onPressed: (){},
-          ),
-          title: Text(widget.title),
+          title: Text(widget.fidgets[_selectedFidget].title),
           actions: <Widget>[
             IconButton(
               icon: Icon(Icons.settings),
@@ -44,15 +81,11 @@ class SingleButtonState extends State<SingleButton> {
           ],
           primary: true,
         ),
-        body: Center(
-          child: Transform.scale(
-            scale: 5,
-            child: FloatingActionButton(
-              backgroundColor: Colors.redAccent,
-              elevation: 0,
-              onPressed: () { Vibration.vibrate(duration: 100); },
-              child: Icon(Icons.vibration),
-            )
+        body: getDrawerItemWidget(_selectedFidget),
+        drawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: drawerItems,
           ),
         ),
       ),

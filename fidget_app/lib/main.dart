@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fidget_app/fidgets/switch.dart';
 import 'package:fidget_app/fidgets/single_button.dart';
+import 'package:fidget_app/settings.dart';
 
 void main() => runApp(MyApp());
 
@@ -17,17 +18,12 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class DrawerItem {
-  String title;
-  DrawerItem(this.title);
-}
-
 class HomePage extends StatefulWidget {
   final String title = "Single Button";
 
   final fidgets = [
-    new DrawerItem("Single Button"),
-    new DrawerItem("Switch"),
+    new Text("Single Button"),
+    new Text("Switch"),
   ];
 
   @override
@@ -35,9 +31,10 @@ class HomePage extends StatefulWidget {
 }
 
 class HomePageState extends State<HomePage> {
-  int _selectedFidget = 0;
+  int selectedFidgetIndex = 0;
+  Widget currentBody = Settings();
 
-  getDrawerItemWidget(int position) {
+  getFidgetWidget(int position) {
     switch (position) {
       case 0:
         return SingleButtonFidget();
@@ -49,8 +46,11 @@ class HomePageState extends State<HomePage> {
     }
   }
 
-  onSelectItem(int index) {
-    setState(() => _selectedFidget = index);
+  onFidgetSelect(int index) {
+    setState(() {
+      selectedFidgetIndex = index;
+    });
+    currentBody = getFidgetWidget(selectedFidgetIndex);
     Navigator.of(context).pop();
   }
 
@@ -61,9 +61,9 @@ class HomePageState extends State<HomePage> {
       var _fidget = widget.fidgets[i];
       drawerItems.add(
         new ListTile(
-          title: Text(_fidget.title),
-          selected: i == _selectedFidget,
-          onTap: () => onSelectItem(i),
+          title: Text(_fidget.data),
+          selected: i == selectedFidgetIndex,
+          onTap: () => onFidgetSelect(i),
         )
       );
     }
@@ -71,17 +71,21 @@ class HomePageState extends State<HomePage> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          title: Text(widget.fidgets[_selectedFidget].title),
+          title: Text(widget.fidgets[selectedFidgetIndex].data),
           actions: <Widget>[
             IconButton(
               icon: Icon(Icons.settings),
               tooltip: "Settings",
-              onPressed: () {},
+              onPressed: () {
+                setState(() {
+                  currentBody = Settings();
+                });
+              },
             ),
           ],
           primary: true,
         ),
-        body: getDrawerItemWidget(_selectedFidget),
+        body: currentBody,
         drawer: Drawer(
           child: ListView(
             padding: EdgeInsets.zero,

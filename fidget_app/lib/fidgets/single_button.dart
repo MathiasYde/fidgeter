@@ -6,15 +6,16 @@ class SingleButtonFidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Transform.scale(
-          scale: 5,
-          child: FloatingActionButton(
-            backgroundColor: Colors.redAccent,
-            elevation: 0,
-            onPressed: () {
-              Vibration.vibrate(duration: 100);
-            },
-            child: Icon(Icons.vibration),
-          )),
+        scale: 5,
+        child: FloatingActionButton(
+          backgroundColor: Colors.redAccent,
+          elevation: 10.0,
+          onPressed: () {
+            Vibration.vibrate(duration: 100);
+          },
+          child: Icon(Icons.vibration),
+        )
+      ),
     );
   }
 }

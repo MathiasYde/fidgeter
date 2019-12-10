@@ -1,19 +1,26 @@
+import 'dart:ffi';
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:vibration/vibration.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingElement {
   String title;
   IconData icon;
+  String variable;
   var value;
   String unit;
-  SettingElement(this.title, this.value, {this.icon = null, this.unit = ""});
+  SettingElement(this.title, this.variable, this.value,
+      {this.icon = null, this.unit = ""});
 }
 
 class Settings extends StatefulWidget {
   final settingElements = [
-    SettingElement("Enable vibration", true, icon: Icons.vibration),
-    SettingElement("Vibration duration", 100, unit: "ms"),
-    SettingElement("Enable sound", false, icon: Icons.surround_sound),
+    SettingElement("Enable vibration", "enable_vibration", true, icon: Icons.vibration),
+    SettingElement("Vibration duration", "vibration_duration", 100, unit: "ms"),
+    SettingElement("Enable sound", "enable_sound", false, icon: Icons.surround_sound),
   ];
 
   @override
@@ -21,53 +28,82 @@ class Settings extends StatefulWidget {
 }
 
 class SettingsState extends State<Settings> {
-  void onSettingElementTap(int index) {
+  void onSettingElementTap(int index) {}
 
+  Future _buildSettingElement(int index) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    var _setting = widget.settingElements[index];
+    Widget _trailing;
+
+    //Change the trailing widget to a checkbox if _setting.value is bool
+    if (_setting.value is bool) {
+      prefs.setBool(_setting.variable, _setting.value);
+      _trailing = Checkbox(
+        value: prefs.getBool(_setting.variable),
+        onChanged: (bool value) {
+          setState(() {
+            prefs.setBool(_setting.variable, value);
+          });
+        },
+      );
+    }
+
+    //Change the trailing widget to a TextFormField if _setting.value is int
+    if (_setting.value is int) {
+      _trailing = Container(
+        width: 60.0,
+        child: TextFormField(
+          initialValue: prefs.getInt(_setting.variable).toString(),
+          keyboardType: TextInputType.number,
+          onFieldSubmitted: (value) async {
+            var _value = int.parse(value);
+
+            if (_value <= 0) { _value = 1; }
+            await prefs.setInt(_setting.variable, _value);
+          },
+        ),
+      );
+    }
+
+    return {
+      "leading": _setting.icon,
+      "trailing": _trailing,
+      "title": _setting.title,
+      "onTap": () => onSettingElementTap(index),
+    };
   }
 
   @override
   Widget build(BuildContext context) {
-    var _settingsElements = <Widget>[];
+    return ListView.builder(
+      itemCount: widget.settingElements.length,
+      itemBuilder: (context, index) {
+        return FutureBuilder(
+          initialData: {"title":"","leading":null,"trailing":Text("")},
+          future: _buildSettingElement(index),
+          builder: (context, snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.none:
+              case ConnectionState.active:
+              case ConnectionState.waiting:
+              case ConnectionState.done:
+                if (snapshot.hasError) {
+                  return Text(
+                      "An error occured, please notify the developer with this code #DU38");
+                }
 
-    for (var i = 0; i < widget.settingElements.length; i++) {
-      var _setting = widget.settingElements[i];
+                var data = snapshot.data;
 
-      Widget _trailing; //= Text("${_setting.value.toString()}${_setting.unit}");
-      //Change the trailing widget to a checkbox if the _setting.value is a bool
-      if (_setting.value is bool) {
-        _trailing = Checkbox(
-          value: _setting.value,
-          onChanged: (bool value) => {
-
+                return ListTile(
+                  title: Text(data["title"]) ?? null,
+                  leading: Icon(data["leading"]) ?? null,
+                  trailing: data["trailing"] ?? null,
+                );
+            }
           },
         );
-      }
-
-      //Change the trailing widget to a TextField if the _setting.value is a String
-      if (_setting.value is String || _setting.value is int) {
-        _trailing = Container(
-          width: 60.0,
-          child: TextField(
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              hintText: 'ms'
-            ),
-          ), 
-        );
-      }
-
-      _settingsElements.add(
-        new ListTile(
-          leading: Icon(_setting.icon),
-          title: Text(_setting.title),
-          trailing: _trailing,
-          onTap: () => onSettingElementTap(i),
-        )
-      );
-    }
-
-    return ListView(
-      children: _settingsElements,
+      },
     );
   }
 }

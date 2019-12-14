@@ -9,6 +9,8 @@ class ButtonFidget extends StatefulWidget {
 }
 
 class ButtonFidgetState extends State<ButtonFidget> {
+  bool _vibrate = true;
+  bool _sound = false;
   int _duration = 1;
 
   @override
@@ -21,6 +23,8 @@ class ButtonFidgetState extends State<ButtonFidget> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     _duration = prefs.getInt("vibration_duration");
+    _vibrate = prefs.getBool("enable_vibration");
+    _sound = prefs.getBool("enable_sound");
   }
 
   @override
@@ -33,7 +37,8 @@ class ButtonFidgetState extends State<ButtonFidget> {
           backgroundColor: Colors.redAccent,
           elevation: 10.0,
           onPressed: () {
-            Vibration.vibrate(duration: _duration);
+            if (_vibrate) { Vibration.vibrate(duration: _duration); }
+            if (_sound) {}
           },
           child: Icon(Icons.vibration),
         )

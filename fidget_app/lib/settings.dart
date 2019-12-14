@@ -28,7 +28,9 @@ class Settings extends StatefulWidget {
 }
 
 class SettingsState extends State<Settings> {
-  void onSettingElementTap(int index) {}
+  void onSettingElementTap(int index) {
+    print(index);
+  }
 
   Future _buildSettingElement(int index) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -38,11 +40,11 @@ class SettingsState extends State<Settings> {
 
     //Change the trailing widget to a checkbox if _setting.value is bool
     if (_setting.value is bool) {
-      prefs.setBool(_setting.variable, _setting.value);
       _trailing = Checkbox(
         value: prefs.getBool(_setting.variable),
         onChanged: (bool value) {
           setState(() {
+            widget.settingElements[index].value = value;
             prefs.setBool(_setting.variable, value);
           });
         },

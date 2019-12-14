@@ -10,18 +10,22 @@ class SwitchFidget extends StatefulWidget {
 
 class SwitchFidgetState extends State<SwitchFidget> {
   bool _value = true;
+  bool _vibrate = true;
+  bool _sound = false;
   int _duration = 1;
 
   @override
   void initState() {
-    getDuration();
+    getPrefs();
     super.initState();
   }
 
-  getDuration() async {
+  getPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     _duration = prefs.getInt("vibration_duration");
+    _vibrate = prefs.getBool("enable_vibration");
+    _sound = prefs.getBool("enable_sound");
   }
 
 
@@ -35,7 +39,8 @@ class SwitchFidgetState extends State<SwitchFidget> {
           onChanged: (bool value) {
             setState(() {
               _value = value;
-              Vibration.vibrate(duration: _duration);
+              if (_vibrate) { Vibration.vibrate(duration: _duration); }
+              if (_sound) {}
             });
           },
         ),

@@ -1,5 +1,5 @@
-# Fidget app
-Flutter based app for people who like the vibration from their phones
+# Fidgeter
+An Flutter-based app for people that likes to fidget
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
